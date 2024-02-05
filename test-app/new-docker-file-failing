@@ -1,0 +1,46 @@
+# Use the official Alpine Linux image with PHP
+FROM php:8.2-alpine
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Install dependencies
+RUN apk add --no-cache \
+    curl \
+    libpng \
+    libjpeg-turbo \
+    libwebp \
+    freetype \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
+    libzip-dev \
+    composer \
+    php-openssl \
+    openssl \
+    nginx \
+    zip \
+    unzip
+
+# Install Composer
+#RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy ssl certificate
+COPY ./sslcert/certificate.crt /etc/nginx/certificate.crt
+COPY ./sslcert/private.key /etc/nginx/private.key
+
+# Remove default nginx configuration
+RUN rm /etc/nginx/nginx.conf
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy application files
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Start Laravel server
+CMD ["nginx", "-g", "daemon off;"]
